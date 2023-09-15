@@ -1,5 +1,6 @@
 site: nopcorn
-url: #yoururl
+url: https://nopcorn.github.io
+domain: nopcorn.github.io 
 title: nopcorn
 description: Decrypting the digital chaos, one byte at a time. A collection of somewhat organized
   thoughts and deep dives.

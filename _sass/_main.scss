@@ -204,6 +204,10 @@ nav ul {
 	margin-top: 0.5rem;
 }
 
+#logo {
+	width: 5rem;
+}
+
 }
 
 section {
@@ -225,4 +229,37 @@ figcaption {
     {
         display: none !important;
     }
+}
+
+code {
+    font-size: 0.75rem;
+    vertical-align: text-bottom;
+}
+
+blockquote code { 
+    background: white;
+}
+
+pre code {
+	display: inline-block;
+}
+
+pre {
+	white-space: pre-wrap;
+}
+
+#logo {
+	border-radius: 50% !important;
+}
+
+pre:has(> .language-hack-nowrap) {
+	white-space: pre;
+}
+
+#topnav {
+	margin-top: 1rem;
+}
+
+.social-icons {
+	width: 2.5rem;
 }

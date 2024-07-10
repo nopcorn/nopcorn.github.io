@@ -3,7 +3,7 @@
     "title": "nopcorn",
     "home_page_url": "http://localhost:4000/",
     "feed_url": "http://localhost:4000/feed.json",
-    "description": "Decrypting the digital chaos, one byte at a time. A collection of somewhat organized thoughts and deep dives.",
+    "description": "thoughts and ramblings of an offensive security engineer",
     "icon": "http://localhost:4000/apple-touch-icon.png",
     "favicon": "http://localhost:4000/favicon.ico",
     "expired": false,

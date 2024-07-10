@@ -12,7 +12,7 @@ tags: [kubernetes, eks, k8s, tradecraft, discovery]
 > - Bruteforcing the cluster's IP space via reverse DNS lookups will reveal services available in the cluster
 > - This allows for some light privilege escalation ™
 
-In a recent red team engagement, I encountered an curious scenario while navigating a Kubernetes cluster. After exploiting a vulnerability in an ephemeral pod and deploying a customized version of the [Poseidon](https://github.com/MythicAgents/poseidon) agent, I turned to lateral movement and privilege escalation. Generally, I start with the stored API creds already available in the pod located in `/var/run/secrets/kubernetes.io/serviceaccount/token` to see what I can access.
+In a recent red team engagement, I encountered a curious scenario while navigating a Kubernetes cluster. After exploiting a vulnerability in an ephemeral pod and deploying a customized version of the [Poseidon](https://github.com/MythicAgents/poseidon) agent, I turned to lateral movement and privilege escalation. Generally, I start with the stored API creds already available in the pod located in `/var/run/secrets/kubernetes.io/serviceaccount/token` to see what I can access.
 
 ```hack-nowrap
 $ curl -L "https://dl.k8s.io/release/v1.30.2/bin/linux/amd64/kubectl" -o /tmp/kubectl

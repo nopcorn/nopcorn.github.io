@@ -172,7 +172,7 @@ blockquote ul {
 }
 
 .post ul, .project ul, .post ol  {
-	list-style-position: outside;
+	list-style-position: inside;
 }
 
 main {
@@ -262,4 +262,8 @@ pre:has(> .language-hack-nowrap) {
 
 .social-icons {
 	width: 2.5rem;
+}
+
+blockquote ul, blockquote ol  {
+	list-style-position: unset !important;
 }

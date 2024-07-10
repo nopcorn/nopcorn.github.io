@@ -45,11 +45,11 @@ selfsubjectrulesreviews.authorization.k8s.io    []                              
 
 ```
 
-In this case - I couldn't access anything. This effectively rendered the Kubernetes API useless for further exploration unless I found a new token to try out. I turned to classic old-school lateral movement and host dicovery.
+In this case - I couldn't access anything. This effectively rendered the Kubernetes API useless for further exploration unless I found a new token to try out. I turned to classic old-school lateral movement and host discovery.
 
 I knew a SentinelOne agent was present on the hypervisor so fast network-based host discovery via `nmap` or `zmap` would be much too noisy and risk giving away the attacker advantage so early in the engagement. I thought about writing a quick and dirty python scanner with generous sleeping in between hosts, but after discovering I was in a `/16` I didn't have the patience to sit through slowly working by way through 65000 potential live IPs. Additionally, I could identify a live IP but due to how Kubernetes clusters are managed that IP could be reassigned or abandoned at any time if a new deployment or load balancing was performed.
 
-Instead I looked for quieter ways of identifying services and pods that wouldn't be as scritized by security products and audit logs, but allowed me to progress somewhat quickly. I decided to take a look at how CoreDNS worked as there was likely less visibility on DNS queries and reoslutions within a cluster. 
+Instead I looked for quieter ways of identifying services and pods that wouldn't be as scrutinized by security products and audit logs, but allowed me to progress somewhat quickly. I decided to take a look at how CoreDNS worked as there was likely less visibility on DNS queries and resolutions within a cluster. 
 
 In Kubernetes, DNS is used by pods to identify other services available in the cluster as IPs change frequently. Every service in Kubernetes is provisioned an entry in the cluster's DNS that corresponds to its service name and the namespace that it's in:
 

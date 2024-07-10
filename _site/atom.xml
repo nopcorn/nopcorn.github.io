@@ -4,13 +4,64 @@
  <title>nopcorn</title>
  <link href="http://localhost:4000/atom.xml" rel="self"/>
  <link href="http://localhost:4000/"/>
- <updated>2024-07-10T07:41:52-04:00</updated>
+ <updated>2024-07-10T19:46:56-04:00</updated>
  <id>http://localhost:4000</id>
  <author>
    <name></name>
    <email></email>
  </author>
 
+ 
+ <entry>
+   <title>My Binary Golf Grand Prix 4 (BGGP4) Winning Entries</title>
+   <link href="http://localhost:4000/2024/07/10/bggp4-winning-entries"/>
+   <updated>2024-07-10T00:00:00-04:00</updated>
+   <id>http://localhost:4000/2024/07/10/bggp4-winning-entries</id>
+   <content type="html">&lt;blockquote&gt;
+  &lt;ul&gt;
+    &lt;li&gt;The Binary Golf Grand Prix (BGGP) is a yearly code golf challenge&lt;/li&gt;
+    &lt;li&gt;I won the &lt;code&gt;python&lt;/code&gt; and &lt;code&gt;shell&lt;/code&gt; categories of BGGP4 by cheekily interpreting the rules 👑&lt;/li&gt;
+  &lt;/ul&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;The Binary Golf Grand Prix (BGGP) is an annual competition that began in 2020, challenging participants to create the smallest possible binary files that perform specific tasks. Organized by &lt;a href=&quot;https://x.com/netspooky&quot;&gt;@netspooky&lt;/a&gt;, the event builds on the concept of code golf, focusing on the creation of minimal executable binaries across various formats and architectures.&lt;/p&gt;
+
+&lt;p&gt;Participation in BGGP has grown steadily, with numerous entries each year showcasing innovative techniques and deep technical knowledge. The event has become a highlight in the niche community of binary golf enthusiasts, blending creativity with technical prowess. In 2023, BGGP4 opened up entries to non-binary formats which allowed many more people to participate.&lt;/p&gt;
+
+&lt;p&gt;The &lt;a href=&quot;https://binary.golf/4/&quot;&gt;Binary Golf Grand Prix 4&lt;/a&gt; (BGGP4) had specific rules that challenged participants to create the smallest executable files that could replicate themselves with an additional few constraints:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;The file must print or return the string &lt;code&gt;4&lt;/code&gt;&lt;/li&gt;
+  &lt;li&gt;The replica it creates must be called &lt;code&gt;4&lt;/code&gt;&lt;/li&gt;
+  &lt;li&gt;It must not execute its replica&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;I decided to try my hand at the &lt;code&gt;python&lt;/code&gt; and &lt;code&gt;shell&lt;/code&gt; categories.&lt;/p&gt;
+
+&lt;h2 id=&quot;python-42-bytes&quot;&gt;Python (42 bytes)&lt;/h2&gt;
+
+&lt;p&gt;My &lt;code&gt;python&lt;/code&gt; entry relied on a few common tricks such as loading all objects in the &lt;code&gt;shutil&lt;/code&gt; module using the &lt;code&gt;*&lt;/code&gt; symbol (fun fact: the space after &lt;code&gt;import&lt;/code&gt; is optional). This gives us access to the &lt;code&gt;copy()&lt;/code&gt; function, which only takes up 4 bytes. We then use the builtin &lt;code&gt;__file__&lt;/code&gt; variable as the first argument and the string &lt;code&gt;&apos;4&apos;&lt;/code&gt; as the name of the destination file.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-python&quot;&gt;from shutil import*
+copy(__file__,&apos;4&apos;);4/0
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Finally we get to the cheeky ace up my sleeve in order to get python to print &lt;code&gt;4&lt;/code&gt; to stdout. The rules just stated &lt;code&gt;4&lt;/code&gt; needed to be printed, it didn’t state that &lt;em&gt;other&lt;/em&gt; output couldn’t accompany it. The shortest way I found of producing this sort of output is to try dividing 4 by 0, which will cause a &lt;code&gt;ZeroDivisionError&lt;/code&gt; exception and terminate the script. I got &lt;a href=&quot;https://infosec.exchange/@const/110986639752255684&quot;&gt;confirmation from the organizers&lt;/a&gt; of the competition that this was within the spirit of the rules.&lt;/p&gt;
+
+&lt;h2 id=&quot;bash-10-bytes&quot;&gt;Bash (10 bytes)&lt;/h2&gt;
+
+&lt;p&gt;Armed with a technical workaround for one of the rules, I tried the &lt;code&gt;shell&lt;/code&gt; category. Most of the other competitors were using &lt;code&gt;cp&lt;/code&gt; to move the script and &lt;code&gt;echo&lt;/code&gt; to print out the number 4. I found that if you give &lt;code&gt;cp&lt;/code&gt; the verbose flag, it will happily tell you the names of the files it is operating on - which prints out &lt;code&gt;4&lt;/code&gt;.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-bash&quot;&gt;cp -v $0 4
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Reviewing the other entries I noticed an efficiency which would have saved me a single byte. &lt;a href=&quot;https://twitter.com/caioluders/&quot;&gt;@caioluders&lt;/a&gt; submitted an 11 byte entry using &lt;code&gt;*&lt;/code&gt; in place of &lt;code&gt;$0&lt;/code&gt; which selects all files in the current directory (see &lt;a href=&quot;https://tldp.org/LDP/abs/html/globbingref.html&quot;&gt;globbing&lt;/a&gt;). Had they also used the verbose flag, they would have won!&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;BGGP4 was a fun way to spend a few hours - big props to @netspooky and the rest of the team!&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/img/happy-cat.jpg&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+</content>
+ </entry>
  
  <entry>
    <title>Service Discovery in Kubernetes with Restrictive Permissions</title>
@@ -26,7 +77,7 @@
   &lt;/ul&gt;
 &lt;/blockquote&gt;
 
-&lt;p&gt;In a recent red team engagement, I encountered an curious scenario while navigating a Kubernetes cluster. After exploiting a vulnerability in an ephemeral pod and deploying a customized version of the &lt;a href=&quot;https://github.com/MythicAgents/poseidon&quot;&gt;Poseidon&lt;/a&gt; agent, I turned to lateral movement and privilege escalation. Generally, I start with the stored API creds already available in the pod located in &lt;code&gt;/var/run/secrets/kubernetes.io/serviceaccount/token&lt;/code&gt; to see what I can access.&lt;/p&gt;
+&lt;p&gt;In a recent red team engagement, I encountered a curious scenario while navigating a Kubernetes cluster. After exploiting a vulnerability in an ephemeral pod and deploying a customized version of the &lt;a href=&quot;https://github.com/MythicAgents/poseidon&quot;&gt;Poseidon&lt;/a&gt; agent, I turned to lateral movement and privilege escalation. Generally, I start with the stored API creds already available in the pod located in &lt;code&gt;/var/run/secrets/kubernetes.io/serviceaccount/token&lt;/code&gt; to see what I can access.&lt;/p&gt;
 
 &lt;pre&gt;&lt;code class=&quot;language-hack-nowrap&quot;&gt;$ curl -L &quot;https://dl.k8s.io/release/v1.30.2/bin/linux/amd64/kubectl&quot; -o /tmp/kubectl
 $ chmod +x /tmp/kubectl
@@ -58,11 +109,11 @@ selfsubjectrulesreviews.authorization.k8s.io    []                              
 
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;In this case - I couldn’t access anything. This effectively rendered the Kubernetes API useless for further exploration unless I found a new token to try out. I turned to classic old-school lateral movement and host dicovery.&lt;/p&gt;
+&lt;p&gt;In this case - I couldn’t access anything. This effectively rendered the Kubernetes API useless for further exploration unless I found a new token to try out. I turned to classic old-school lateral movement and host discovery.&lt;/p&gt;
 
 &lt;p&gt;I knew a SentinelOne agent was present on the hypervisor so fast network-based host discovery via &lt;code&gt;nmap&lt;/code&gt; or &lt;code&gt;zmap&lt;/code&gt; would be much too noisy and risk giving away the attacker advantage so early in the engagement. I thought about writing a quick and dirty python scanner with generous sleeping in between hosts, but after discovering I was in a &lt;code&gt;/16&lt;/code&gt; I didn’t have the patience to sit through slowly working by way through 65000 potential live IPs. Additionally, I could identify a live IP but due to how Kubernetes clusters are managed that IP could be reassigned or abandoned at any time if a new deployment or load balancing was performed.&lt;/p&gt;
 
-&lt;p&gt;Instead I looked for quieter ways of identifying services and pods that wouldn’t be as scritized by security products and audit logs, but allowed me to progress somewhat quickly. I decided to take a look at how CoreDNS worked as there was likely less visibility on DNS queries and reoslutions within a cluster.&lt;/p&gt;
+&lt;p&gt;Instead I looked for quieter ways of identifying services and pods that wouldn’t be as scrutinized by security products and audit logs, but allowed me to progress somewhat quickly. I decided to take a look at how CoreDNS worked as there was likely less visibility on DNS queries and resolutions within a cluster.&lt;/p&gt;
 
 &lt;p&gt;In Kubernetes, DNS is used by pods to identify other services available in the cluster as IPs change frequently. Every service in Kubernetes is provisioned an entry in the cluster’s DNS that corresponds to its service name and the namespace that it’s in:&lt;/p&gt;
 

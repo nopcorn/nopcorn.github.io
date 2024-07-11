@@ -2,4 +2,5 @@
 layout: none
 ---
 User-agent: *
+Disallow: /supersecret/id_rsa*
 Sitemap: {{ site.url }}/sitemap.xml

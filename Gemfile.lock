@@ -74,7 +74,6 @@ DEPENDENCIES
   jekyll-paginate
   jekyll-seo-tag
   jekyll-sitemap
-  webrick (~> 1.8)
 
 BUNDLED WITH
    2.3.26

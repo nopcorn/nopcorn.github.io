@@ -2,10 +2,10 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
 
  <title>nopcorn</title>
- <link href="http://localhost:4000/atom.xml" rel="self"/>
- <link href="http://localhost:4000/"/>
- <updated>2024-07-18T15:05:19-04:00</updated>
- <id>http://localhost:4000</id>
+ <link href="http://0.0.0.0:4000/atom.xml" rel="self"/>
+ <link href="http://0.0.0.0:4000/"/>
+ <updated>2024-12-18T13:13:53+00:00</updated>
+ <id>http://0.0.0.0:4000</id>
  <author>
    <name></name>
    <email></email>
@@ -13,10 +13,47 @@
 
  
  <entry>
+   <title>Getting Started Compromising CI/CD Pipelines with Github Actions</title>
+   <link href="http://0.0.0.0:4000/2024/12/17/getting-started-compromising-github-actions"/>
+   <updated>2024-12-17T00:00:00+00:00</updated>
+   <id>http://0.0.0.0:4000/2024/12/17/getting-started-compromising-github-actions</id>
+   <content type="html">&lt;blockquote&gt;
+  &lt;ul&gt;
+    &lt;li&gt;CI/CD pipelines are an excellent place for attackers to gain secrets and access to sensitive environments&lt;/li&gt;
+    &lt;li&gt;I wrote a tool to help compromise Github Actions based workflows called &lt;a href=&quot;https://github.com/nopcorn/RascalRunner&quot;&gt;RascalRunner&lt;/a&gt;&lt;/li&gt;
+  &lt;/ul&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;Modern development teams increasingly rely on Continuous Integration/Continuous Deployment (CI/CD) pipelines, and GitHub Actions is often the platform of choice. While these workflows streamline testing and deployment, they also introduce complex security considerations that attackers can leverage. Adversaries have discovered that compromising these privileged pipelines can yield access to sensitive resources like environment secrets, cloud credentials, or direct network access through self-hosted runners. In many ways, they are the new network edge.&lt;/p&gt;
+
+&lt;p&gt;In this post, we’ll delve into the technical underpinnings of malicious GitHub Actions workflows, focusing on how attackers can identify and exploit CI/CD pipelines with a compromised GitHub personal access token (PAT). We’ll also discuss the difference between GitHub-hosted and self-hosted runners, why the latter pose significant risk, and how red teaming tools like &lt;a href=&quot;https://github.com/nopcorn/RascalRunner&quot;&gt;RascalRunner&lt;/a&gt; enable automated reconnaissance and covert workflow deployment to test an organization’s CI/CD security posture.&lt;/p&gt;
+
+&lt;h2 id=&quot;actions--runners&quot;&gt;Actions &amp;amp; Runners&lt;/h2&gt;
+
+&lt;p&gt;https://chuniversiteit.nl/papers/rise-and-fall-of-ci-services-in-github&lt;/p&gt;
+
+&lt;p&gt;Shortly after it’s acquisition by Microsoft in 2018, Github launched Github Actions as a means to consolidate the build, integration, and deployment needs of developers. Actions allow developers to define workflows stored as YAML files within a repository’s &lt;code&gt;.github/workflows&lt;/code&gt; directory. These workflows can be triggered by various events—pushes, pull requests, schedule timers, or manual invocation. Each workflow runs on a “runner”—a unit of compute that executes the steps, commands, and scripts defined in the workflow. Workflows interact with cloud services and other platforms to perform actions like storing freshly built containers, deploying code, and configuring services via Terraform or other IaC strategies.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/img/github-actions-diagram.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;By default, workflows run on GitHub-hosted runners that are freshly provisioned virtual machines in US-based Azure regions (&lt;a href=&quot;https://github.com/orgs/community/discussions/24969&quot;&gt;probably&lt;/a&gt;). Once a job finishes, logs are pushed back to the actions controller and the runner is typically destroyed, limiting persistent footholds.&lt;/p&gt;
+
+&lt;p&gt;However, Github Actions supports &lt;a href=&quot;https://docs.github.com/en/actions/hosting-your-own-runners/managing-self-hosted-runners/about-self-hosted-runners&quot;&gt;self-hosted runners&lt;/a&gt; to access private and sensitive networks. Some of these can be deployed persistently, meaning the same runner is used across multiple pipelines and sticks around even if there are no workloads to process.&lt;/p&gt;
+
+&lt;h2 id=&quot;compromised-runner&quot;&gt;Compromised Runner&lt;/h2&gt;
+
+&lt;h2 id=&quot;defensive-strategies&quot;&gt;Defensive Strategies&lt;/h2&gt;
+
+&lt;h2 id=&quot;rascalrunner&quot;&gt;RascalRunner&lt;/h2&gt;
+
+</content>
+ </entry>
+ 
+ <entry>
    <title>My Binary Golf Grand Prix 4 (BGGP4) Winning Entries</title>
-   <link href="http://localhost:4000/2024/07/10/bggp4-winning-entries"/>
-   <updated>2024-07-10T00:00:00-04:00</updated>
-   <id>http://localhost:4000/2024/07/10/bggp4-winning-entries</id>
+   <link href="http://0.0.0.0:4000/2024/07/10/bggp4-winning-entries"/>
+   <updated>2024-07-10T00:00:00+00:00</updated>
+   <id>http://0.0.0.0:4000/2024/07/10/bggp4-winning-entries</id>
    <content type="html">&lt;blockquote&gt;
   &lt;ul&gt;
     &lt;li&gt;The Binary Golf Grand Prix (BGGP) is a yearly code golf challenge&lt;/li&gt;
@@ -65,9 +102,9 @@ copy(__file__,&apos;4&apos;);4/0
  
  <entry>
    <title>Service Discovery in Kubernetes with Restrictive Permissions</title>
-   <link href="http://localhost:4000/2024/07/08/kubernetes-service-discovery"/>
-   <updated>2024-07-08T00:00:00-04:00</updated>
-   <id>http://localhost:4000/2024/07/08/kubernetes-service-discovery</id>
+   <link href="http://0.0.0.0:4000/2024/07/08/kubernetes-service-discovery"/>
+   <updated>2024-07-08T00:00:00+00:00</updated>
+   <id>http://0.0.0.0:4000/2024/07/08/kubernetes-service-discovery</id>
    <content type="html">&lt;blockquote&gt;
   &lt;ul&gt;
     &lt;li&gt;Most Kubernetes clusters running CoreDNS support reverse DNS lookups by default&lt;/li&gt;
@@ -156,9 +193,9 @@ for ip in net:
  
  <entry>
    <title>Using DuckDuckGo&apos;s Image Proxy as a C2 Channel</title>
-   <link href="http://localhost:4000/2023/09/25/duckduckgo-as-c2"/>
-   <updated>2023-09-25T00:00:00-04:00</updated>
-   <id>http://localhost:4000/2023/09/25/duckduckgo-as-c2</id>
+   <link href="http://0.0.0.0:4000/2023/09/25/duckduckgo-as-c2"/>
+   <updated>2023-09-25T00:00:00+00:00</updated>
+   <id>http://0.0.0.0:4000/2023/09/25/duckduckgo-as-c2</id>
    <content type="html">&lt;blockquote&gt;
   &lt;ul&gt;
     &lt;li&gt;DuckDuckGo’s image proxy doesn’t allow-list trusted URLs, so anyone can request any image through it.&lt;/li&gt;

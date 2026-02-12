@@ -1,6 +1,6 @@
 ---
 layout: post
-title: GitHub Actions Secrets: Your New Favorite Red Team Primitive
+title: GitHub Actions Secrets - Your New Favorite Red Team Primitive
 author: nopcorn
 description: GitHub Actions secrets are designed to protect your credentials, but the same properties that make them secure make them a versatile tool for attackers.
 summary: GitHub Actions secrets are designed to protect your credentials, but the same properties that make them secure make them a versatile tool for attackers.

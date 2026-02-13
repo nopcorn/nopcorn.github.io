@@ -5,6 +5,7 @@ author: nopcorn
 description: GitHub Actions secrets are designed to protect your credentials, but the same properties that make them secure make them a versatile tool for attackers.
 summary: GitHub Actions secrets are designed to protect your credentials, but the same properties that make them secure make them a versatile tool for attackers.
 tags: [cicd, github, github_token, workflow, redteam, actions, github_actions, secrets]
+liquid: false
 ---
 
 > - Anyone with write access to a repo can overwrite any secret, including environment secrets protected by required reviewers

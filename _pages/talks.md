@@ -1,0 +1,35 @@
+---
+layout: page
+title: talks
+---
+
+<ul class="talks">
+  <li>
+    <div class="talk-header">
+      <span class="talk-title">Commit, Push, Compromise: Attacking Modern GitHub Orgs</span>
+      <span class="talk-links">
+        <a href="https://nopcorn.run/commit-push-compromise">slides</a>
+        <a href="#">video</a>
+      </span>
+    </div>
+    <div class="talk-venue">NorthSec 2026, Montreal</div>
+  </li>
+  <li>
+    <div class="talk-header">
+      <span class="talk-title">Can Standards Really Make Blockchain More Secure?</span>
+      <span class="talk-links">
+        <a href="https://www.youtube.com/watch?v=wh3-mm4-_uk">video</a>
+      </span>
+    </div>
+    <div class="talk-venue">DeFi Security Summit 2025, Buenos Aires</div>
+  </li>
+  <li>
+    <div class="talk-header">
+      <span class="talk-title">Trust is the Next Block: Inside the Work of the Blockchain Security Standards Council</span>
+      <span class="talk-links">
+        <a href="https://www.youtube.com/watch?v=WzqnKCUUQNo">video</a>
+      </span>
+    </div>
+    <div class="talk-venue">Webinar, 2025</div>
+  </li>
+</ul>

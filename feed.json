@@ -3,12 +3,12 @@ layout: null
 ---
 {
     "version": "https://jsonfeed.org/version/1",
-    "title": "{{ site.title | xml_escape }}",
+    "title": {{ site.title | jsonify }},
     "home_page_url": "{{ "/" | absolute_url }}",
     "feed_url": "{{ "/feed.json" | absolute_url }}",
     "description": {{ site.description | jsonify }},
     "icon": "{{ "/apple-touch-icon.png" | absolute_url }}",
-    "favicon": "{{ "/favicon.ico" | absolute_url }}",
+    "favicon": "{{ "/favicon.png" | absolute_url }}",
     "expired": false,
     {% if site.author %}
     "author": {% if site.author.name %} {

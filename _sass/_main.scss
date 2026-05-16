@@ -171,6 +171,47 @@ blockquote ul {
 	font-variant-numeric: tabular-nums;
 }
 
+.talks {
+	list-style: none;
+}
+
+.talks li {
+	margin-bottom: 0.75rem;
+	line-height: 1.35;
+}
+
+.talks .talk-header {
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: 1rem;
+}
+
+.talks .talk-title {
+	font-weight: 600;
+	flex: 1;
+	min-width: 0;
+}
+
+.talks .talk-venue {
+	color: #555;
+	font-size: 0.85rem;
+}
+
+.talks .talk-links {
+	white-space: nowrap;
+	flex-shrink: 0;
+}
+
+.talks .talk-links a {
+	margin-left: 0.75rem;
+	font-size: 0.9rem;
+}
+
+.talks .talk-links a:first-child {
+	margin-left: 0;
+}
+
 .post ul, .project ul, .post ol  {
 	list-style-position: inside;
 }

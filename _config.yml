@@ -1,9 +1,23 @@
 site: nopcorn
-url: https://nopcorn.run/
+url: https://nopcorn.run
 domain: nopcorn.run
 title: nopcorn
 description: thoughts and ramblings of an offensive security engineer
 permalink: pretty
+
+author:
+  name: nopcorn
+  url: https://nopcorn.run
+
+logo: /assets/logo.jpeg
+twitter:
+  username: nopcorn18785
+  card: summary
+social:
+  name: nopcorn
+  links:
+    - https://github.com/nopcorn
+    - https://x.com/nopcorn18785
 
 baseurl: ""
 
@@ -51,3 +65,12 @@ defaults:
       type: "posts"
     values:
       layout: "post"
+      image: /assets/logo.jpeg
+      seo:
+        type: BlogPosting
+  -
+    scope:
+      path: ""
+      type: "pages"
+    values:
+      image: /assets/logo.jpeg

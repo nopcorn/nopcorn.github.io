@@ -6,6 +6,15 @@ title: talks
 <ul class="talks">
   <li>
     <div class="talk-header">
+      <span class="talk-title">Securing the Future of Blockchain: Inside the BSSC Smart Contract Standard</span>
+      <span class="talk-links">
+        <a href="https://www.youtube.com/watch?v=LDmNWJyZ8zk">video</a>
+      </span>
+    </div>
+    <div class="talk-venue">Webinar, 2026</div>
+  </li>
+  <li>
+    <div class="talk-header">
       <span class="talk-title">Commit, Push, Compromise: Attacking Modern GitHub Orgs</span>
       <span class="talk-links">
         <a href="https://nopcorn.run/commit-push-compromise">slides</a>

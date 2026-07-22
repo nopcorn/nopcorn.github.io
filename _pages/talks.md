@@ -4,6 +4,15 @@ title: talks
 ---
 
 <ul class="talks">
+    <li>
+    <div class="talk-header">
+      <span class="talk-title">Commit, Push, Compromise: Attacking Modern GitHub Orgs (Workshop)</span>
+      <span class="talk-links">
+        <a href="#">upcoming</a>
+      </span>
+    </div>
+    <div class="talk-venue">DEFCON 34 Red Team Village 2026, Las Vegas</div>
+  </li>
   <li>
     <div class="talk-header">
       <span class="talk-title">Securing the Future of Blockchain: Inside the BSSC Smart Contract Standard</span>

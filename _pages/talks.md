@@ -8,7 +8,7 @@ title: talks
     <div class="talk-header">
       <span class="talk-title">Commit, Push, Compromise: Attacking Modern GitHub Orgs (Workshop)</span>
       <span class="talk-links">
-        <a href="#">upcoming</a>
+        upcoming
       </span>
     </div>
     <div class="talk-venue">DEFCON 34 Red Team Village 2026, Las Vegas</div>

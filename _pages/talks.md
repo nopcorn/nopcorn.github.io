@@ -4,10 +4,28 @@ title: talks
 ---
 
 <ul class="talks">
-    <li>
+  <li>
+    <div class="talk-header">
+      <span class="talk-title">Quantum & Post-Quantum Cryptography</span>
+      <span class="talk-links" style="font-size:0.9rem">
+        upcoming
+      </span>
+    </div>
+    <div class="talk-venue">Boston Blockchain Week 2026, Boston</div>
+  </li>
+  <li>
+    <div class="talk-header">
+      <span class="talk-title">Securing the Stack: Standards & Architecture</span>
+      <span class="talk-links" style="font-size:0.9rem">
+        upcoming
+      </span>
+    </div>
+    <div class="talk-venue">Boston Blockchain Week 2026, Boston</div>
+  </li>
+  <li>
     <div class="talk-header">
       <span class="talk-title">Commit, Push, Compromise: Attacking Modern GitHub Orgs (Workshop)</span>
-      <span class="talk-links">
+      <span class="talk-links" style="font-size:0.9rem">
         upcoming
       </span>
     </div>

@@ -44,7 +44,7 @@ title: talks
     <div class="talk-header">
       <span class="talk-title">Commit, Push, Compromise: Attacking Modern GitHub Orgs</span>
       <span class="talk-links">
-        <a href="https://nopcorn.run/commit-push-compromise">slides</a>
+        <a href="https://nopcorn.run/commit-push-compromise-northsec2026">slides</a>
         <a href="#">video</a>
       </span>
     </div>

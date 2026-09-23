@@ -8,7 +8,7 @@ title: talks
     <div class="talk-header">
       <span class="talk-title">Quantum & Post-Quantum Cryptography</span>
       <span class="talk-links" style="font-size:0.9rem">
-        upcoming
+        <a href="https://www.youtube.com/watch?v=VHxVPbwQX0U">video</a>
       </span>
     </div>
     <div class="talk-venue">Boston Blockchain Week 2026, Boston</div>
@@ -17,7 +17,7 @@ title: talks
     <div class="talk-header">
       <span class="talk-title">Securing the Stack: Standards & Architecture</span>
       <span class="talk-links" style="font-size:0.9rem">
-        upcoming
+        <a href="https://www.youtube.com/watch?v=q7yZ88zdUm0">video</a>
       </span>
     </div>
     <div class="talk-venue">Boston Blockchain Week 2026, Boston</div>
